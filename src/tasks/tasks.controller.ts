@@ -7,8 +7,10 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
+  ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Task } from './entities/task.entity';
@@ -38,12 +40,36 @@ export class TasksController {
 
   @Patch(':id/done')
   @ApiOperation({ summary: 'Mark task as done' })
+  @ApiParam({
+    name: 'id',
+    type: 'integer',
+    description: 'The unique identifier of the task',
+    example: 1,
+    required: true,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The task has been marked as done.',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
-  markAsDone(@Param('id') id: number): Task {
-    return this.tasksService.markAsDone(+id);
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid task ID format.',
+  })
+  markAsDone(
+    @Param(
+      'id',
+      new ParseIntPipe({
+        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        exceptionFactory: (error) => {
+          throw new BadRequestException(
+            'Invalid task ID format. ID must be a positive integer.',
+          );
+        },
+      }),
+    )
+    id: number,
+  ): Task {
+    return this.tasksService.markAsDone(id);
   }
 }
