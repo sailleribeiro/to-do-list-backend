@@ -9,7 +9,6 @@ async function bootstrap() {
     .setTitle('To-Do List API')
     .setDescription('A simple API to manage your to-do lists and tasks')
     .setVersion('1.0')
-    .addTag('to-do')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
