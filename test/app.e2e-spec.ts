@@ -94,7 +94,7 @@ describe('AppController (e2e)', () => {
 
   describe('/api/tasks/:id/done (PATCH)', () => {
     it('should mark task as done', async () => {
-      // Primeiro criar uma task
+      // criar uma task
       const createTaskDto = {
         title: 'Task to complete',
         description: 'This will be completed',
@@ -107,7 +107,7 @@ describe('AppController (e2e)', () => {
 
       const taskId = createResponse.body.id;
 
-      // Agora marcar como done
+      // marca como done
       return request(app.getHttpServer())
         .patch(`/api/tasks/${taskId}/done`)
         .expect(200)
