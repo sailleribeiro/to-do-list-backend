@@ -24,11 +24,10 @@ async function bootstrap() {
     .addTag('tasks')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('/', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
   console.log('Server running on http://localhost:3000');
-  console.log('API Documentation: http://localhost:3000/api');
+  console.log('API Documentation: http://localhost:3000/');
 }
-
 bootstrap();
