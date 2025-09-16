@@ -6,6 +6,7 @@ import {
   Param,
   Body,
   ValidationPipe,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -19,7 +20,7 @@ export class TasksController {
 
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
-  @ApiResponse({ status: 200, description: 'Return all tasks.' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Return all tasks.' })
   findAll(): Task[] {
     return this.tasksService.findAll();
   }
@@ -27,10 +28,10 @@ export class TasksController {
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({
-    status: 201,
+    status: HttpStatus.CREATED,
     description: 'The task has been successfully created.',
   })
-  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   create(@Body(new ValidationPipe()) createTaskDto: CreateTaskDto): Task {
     return this.tasksService.create(createTaskDto);
   }
@@ -38,11 +39,11 @@ export class TasksController {
   @Patch(':id/done')
   @ApiOperation({ summary: 'Mark task as done' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'The task has been marked as done.',
   })
-  @ApiResponse({ status: 404, description: 'Task not found.' })
-  markAsDone(@Param('id') id: string): Task {
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
+  markAsDone(@Param('id') id: number): Task {
     return this.tasksService.markAsDone(+id);
   }
 }
