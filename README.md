@@ -1,114 +1,88 @@
-# README.md
 # To-Do List API
 
-Uma API simples para gerenciar tarefas com NestJS, TypeScript e armazenamento em memória.
+API REST para gerenciamento de tarefas desenvolvida com NestJS e TypeScript.
 
 ## 🚀 Funcionalidades
 
-- ✅ Listar todas as tarefas
-- ✅ Criar nova tarefa
-- ✅ Marcar tarefa como concluída
-- ✅ Validação de dados com DTOs
-- ✅ Documentação automática com Swagger
-- ✅ Testes unitários
-- ✅ Docker support
+- Listar todas as tarefas
+- Criar nova tarefa
+- Marcar tarefa como concluída
+- Validação automática de dados
+- Documentação interativa com Swagger
+- Testes unitários e E2E
+
+## 🔧 Tecnologias
+
+- **NestJS** - Framework Node.js
+- **TypeScript** - Linguagem de programação
+- **class-validator** - Validação de dados
+- **Swagger/OpenAPI** - Documentação da API
+- **Jest** - Framework de testes
+- **Docker** - Containerização
 
 ## 📋 Endpoints
 
-- `GET /tasks` - Retorna todas as tarefas
-- `POST /tasks` - Cria uma nova tarefa
-- `PATCH /tasks/:id/done` - Marca tarefa como concluída
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/tasks` | Lista todas as tarefas |
+| `POST` | `/api/tasks` | Cria uma nova tarefa |
+| `PATCH` | `/api/tasks/:id/done` | Marca tarefa como concluída |
 
 ## 🛠️ Como executar
 
-### Opção 1: Desenvolvimento local
+### Desenvolvimento local
 
 ```bash
 # Instalar dependências
 npm install
 
-# Executar em modo desenvolvimento
+# Executar aplicação
 npm run start:dev
-
-# API estará disponível em http://localhost:3000
-# Documentação Swagger: http://localhost:3000/api
 ```
 
-### Opção 2: Docker
+### Docker
 
 ```bash
 # Executar com Docker Compose
-docker-compose up
-
-# API estará disponível em http://localhost:3000
+docker-compose up -d
 ```
 
-### Opção 3: Docker simples
+### URLs de acesso
 
-```bash
-# Build da imagem
-docker build -t todo-api .
+- **API**: http://localhost:3001
+- **Documentação**: http://localhost:3001 (Swagger UI)
+- **Endpoints**: http://localhost:3001/api/tasks
 
-# Executar container
-docker run -p 3000:3000 todo-api
-```
-
-## 🧪 Executar testes
+## 🧪 Testes
 
 ```bash
 # Testes unitários
 npm run test
 
-# Testes com coverage
-npm run test:cov
+# Testes E2E
+npm run test:e2e
 
-# Testes em modo watch
-npm run test:watch
+# Cobertura de testes
+npm run test:cov
 ```
 
 ## 📝 Exemplo de uso
 
 ```bash
-# Criar uma tarefa
-curl -X POST http://localhost:3000/tasks \
+# Criar tarefa
+curl -X POST http://localhost:3001/api/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title": "Estudar NestJS", "description": "Aprender sobre DTOs e validação"}'
+  -d '{"title": "Estudar NestJS", "description": "Aprender sobre DTOs"}'
 
-# Listar todas as tarefas
-curl http://localhost:3000/tasks
+# Listar tarefas
+curl http://localhost:3001/api/tasks
 
-# Marcar tarefa como concluída
-curl -X PATCH http://localhost:3000/tasks/1/done
+# Marcar como concluída
+curl -X PATCH http://localhost:3001/api/tasks/1/done
 ```
-
-## 🏗️ Estrutura do projeto
-
-```
-src/
-├── tasks/
-│   ├── dto/
-│   │   └── create-task.dto.ts
-│   ├── entities/
-│   │   └── task.entity.ts
-│   ├── tasks.controller.ts
-│   ├── tasks.service.ts
-│   ├── tasks.service.spec.ts
-│   └── tasks.module.ts
-├── app.module.ts
-└── main.ts
-```
-
-## 🔧 Tecnologias utilizadas
-
-- NestJS
-- TypeScript
-- class-validator
-- Swagger/OpenAPI
-- Jest (testes)
-- Docker
 
 ## ⚠️ Observações
 
-- Os dados são armazenados em memória (array)
-- Os dados são perdidos quando a aplicação é reiniciada
-- Ideal para desenvolvimento e testes
+- Dados armazenados em memória (perdidos ao reiniciar)
+- Validação automática nos dados de entrada
+- Documentação interativa
