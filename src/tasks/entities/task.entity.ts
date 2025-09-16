@@ -10,14 +10,14 @@ export class Task {
 
   @ApiProperty({
     description: 'Title of the task',
-    example: 'Buy groceries',
+    example: 'Create a to-do list API',
     maxLength: 100,
   })
   title: string;
 
   @ApiProperty({
     description: 'Optional description of the task',
-    example: 'Buy milk, bread, and eggs',
+    example: 'Implement authentication',
     required: false,
     maxLength: 500,
   })
