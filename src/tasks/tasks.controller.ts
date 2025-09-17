@@ -7,8 +7,6 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
-  ParseIntPipe,
-  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -42,9 +40,9 @@ export class TasksController {
   @ApiOperation({ summary: 'Mark task as done' })
   @ApiParam({
     name: 'id',
-    type: 'integer',
-    description: 'The unique identifier of the task',
-    example: 1,
+    type: 'string',
+    description: 'The unique identifier of the task (UUID)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
     required: true,
   })
   @ApiResponse({
@@ -56,20 +54,22 @@ export class TasksController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid task ID format.',
   })
-  markAsDone(
-    @Param(
-      'id',
-      new ParseIntPipe({
-        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
-        exceptionFactory: (error) => {
-          throw new BadRequestException(
-            'Invalid task ID format. ID must be a positive integer.',
-          );
-        },
-      }),
-    )
-    id: number,
-  ): Task {
+  markAsDone(@Param('id') id: string): Task {
     return this.tasksService.markAsDone(id);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get task by ID' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'The unique identifier of the task (UUID)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    required: true,
+  })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Return the task.' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
+  findById(@Param('id') id: string): Task {
+    return this.tasksService.findById(id);
   }
 }

@@ -1,20 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { v4 as uuidv4 } from 'uuid';
+
 import { Task } from './entities/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 
 @Injectable()
 export class TasksService {
-  private tasks = new Map<number, Task>();
-  private nextId = 1;
+  private readonly tasks: Map<string, Task> = new Map<string, Task>();
 
   findAll(): Task[] {
     return Array.from(this.tasks.values());
   }
 
   create(createTaskDto: CreateTaskDto): Task {
+    const taskId = uuidv4();
+
     const task = new Task(
-      this.nextId++,
+      taskId,
       createTaskDto.title,
       createTaskDto.description,
     );
@@ -22,7 +25,7 @@ export class TasksService {
     return task;
   }
 
-  markAsDone(id: number): Task {
+  markAsDone(id: string): Task {
     const task = this.tasks.get(id);
     if (!task) {
       throw new NotFoundException('Task not found');
@@ -31,8 +34,8 @@ export class TasksService {
     return task;
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests por minuto
-  findById(id: number): Task {
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  findById(id: string): Task {
     const task = this.tasks.get(id);
     if (!task) {
       throw new NotFoundException('Task not found');
