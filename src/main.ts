@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -27,7 +27,6 @@ async function bootstrap() {
   SwaggerModule.setup('/', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
-  console.log('Server running on http://localhost:3000');
-  console.log('API Documentation: http://localhost:3000/');
+  Logger.log(`Server running on http://localhost:${process.env.PORT ?? 3000}`);
 }
 bootstrap();

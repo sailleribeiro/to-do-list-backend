@@ -27,7 +27,10 @@ describe('TasksService', () => {
     const task = service.create(createTaskDto);
 
     expect(task).toBeDefined();
-    expect(task.id).toBe(1);
+    expect(task.id).toEqual(expect.any(String));
+    expect(task.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    ); // Valida formato UUID
     expect(task.title).toBe('Test Task');
     expect(task.description).toBe('Test Description');
     expect(task.done).toBe(false);
@@ -58,6 +61,27 @@ describe('TasksService', () => {
   });
 
   it('should throw NotFoundException when marking non-existent task as done', () => {
-    expect(() => service.markAsDone(999)).toThrow(NotFoundException);
+    expect(() =>
+      service.markAsDone('550e8400-e29b-41d4-a716-446655440000'),
+    ).toThrow(NotFoundException);
+  });
+
+  it('should find task by id', () => {
+    const createTaskDto: CreateTaskDto = {
+      title: 'Test Task',
+    };
+
+    const task = service.create(createTaskDto);
+    const foundTask = service.findById(task.id);
+
+    expect(foundTask).toBeDefined();
+    expect(foundTask.id).toBe(task.id);
+    expect(foundTask.title).toBe('Test Task');
+  });
+
+  it('should throw NotFoundException when finding non-existent task', () => {
+    expect(() =>
+      service.findById('550e8400-e29b-41d4-a716-446655440000'),
+    ).toThrow(NotFoundException);
   });
 });

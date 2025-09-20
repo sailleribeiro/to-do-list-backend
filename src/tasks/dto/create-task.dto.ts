@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTaskDto {
   @ApiProperty({
-    description: 'titulo da tarefa',
+    description: 'insert the title of the task',
     example: 'Task frontend',
   })
   @IsString()
@@ -12,8 +12,8 @@ export class CreateTaskDto {
   title: string;
 
   @ApiPropertyOptional({
-    description: 'A descrição da tarefa',
-    example: 'Intergrar rotas no frontend',
+    description: 'insert the description of the task',
+    example: 'Integrate routes in the frontend',
   })
   @IsString()
   @IsOptional()

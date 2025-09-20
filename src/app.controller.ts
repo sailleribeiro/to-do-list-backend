@@ -22,8 +22,8 @@ export class AppController {
       version: '1.0.0',
       status: 'running',
       timestamp: '2024-01-01T10:00:00.000Z',
-      endpoints: ['/api/tasks'],
       documentation: '/',
+      author: 'Ellias Ribeiro',
     },
   })
   getAppInfo() {

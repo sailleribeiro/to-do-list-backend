@@ -3,10 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 export class Task {
   @ApiProperty({
     description: 'Unique identifier of the task',
-    example: 1,
-    type: 'integer',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    type: 'string',
   })
-  id: number;
+  id: string;
 
   @ApiProperty({
     description: 'Title of the task',
@@ -38,7 +38,7 @@ export class Task {
   })
   createdAt: Date;
 
-  constructor(id: number, title: string, description?: string) {
+  constructor(id: string, title: string, description?: string) {
     this.id = id;
     this.title = title;
     this.description = description;
