@@ -7,6 +7,7 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -21,8 +22,16 @@ export class TasksController {
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Return all tasks.' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'No tasks found.',
+  })
   findAll(): Task[] {
-    return this.tasksService.findAll();
+    const tasks = this.tasksService.findAll();
+    if (tasks.length === 0) {
+      throw new HttpException('No tasks found', HttpStatus.NO_CONTENT);
+    }
+    return tasks;
   }
 
   @Post()
