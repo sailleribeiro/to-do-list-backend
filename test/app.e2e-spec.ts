@@ -134,6 +134,45 @@ describe('AppController (e2e)', () => {
     });
   });
 
+  describe('/api/tasks/:id (DELETE)', () => {
+    it('should delete a task by ID', async () => {
+      // Criar uma task
+      const createTaskDto = {
+        title: 'Task to delete',
+        description: 'This task will be deleted',
+      };
+
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/tasks')
+        .send(createTaskDto)
+        .expect(201);
+
+      const taskId = createResponse.body.id;
+
+      // Deletar a task
+      await request(app.getHttpServer())
+        .delete(`/api/tasks/${taskId}`)
+        .expect(200);
+
+      // Verificar se a task foi removida
+      await request(app.getHttpServer())
+        .get('/api/tasks')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveLength(0);
+        });
+    });
+
+    it('should return 404 for non-existent task', () => {
+      return request(app.getHttpServer())
+        .delete('/api/tasks/550e8400-e29b-41d4-a716-446655440000')
+        .expect(404)
+        .expect((res) => {
+          expect(res.body.message).toBe('Task not found');
+        });
+    });
+  });
+
   describe('Integration test - Full workflow', () => {
     it('should create, list, and complete a task', async () => {
       // 1. Verificar lista vazia
