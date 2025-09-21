@@ -22,11 +22,12 @@ API REST para gerenciamento de tarefas desenvolvida com NestJS e TypeScript.
 
 ## 📋 Endpoints
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/tasks` | Lista todas as tarefas |
-| `POST` | `/api/tasks` | Cria uma nova tarefa |
-| `PATCH` | `/api/tasks/:id/done` | Marca tarefa como concluída |
+| Método | Rota          | Descrição                     |
+|--------|---------------|-------------------------------|
+| `GET`  | `/api/tasks`  | Lista todas as tarefas        |
+| `POST` | `/api/tasks`  | Cria uma nova tarefa          |
+| `PATCH`| `/api/tasks/:id/done` | Marca tarefa como concluída |
+| `GET`  | `/health`     | Verifica o status da aplicação |
 
 ## 🛠️ Como executar
 
