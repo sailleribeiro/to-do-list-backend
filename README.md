@@ -40,6 +40,13 @@ npm install
 npm run start:dev
 ```
 
+> **Nota:** Por padrão, a aplicação será executada na porta `3000`. Caso essa porta não esteja disponível, será utilizada a próxima porta livre. Você pode configurar uma porta específica definindo a variável de ambiente `PORT` antes de iniciar a aplicação:
+
+```bash
+# Exemplo: executar na porta 4000
+set PORT=4000 && npm run start:dev
+```
+
 ### Docker
 
 ```bash
@@ -49,9 +56,8 @@ docker-compose up -d
 
 ### URLs de acesso
 
-- **API**: http://localhost:3001
-- **Documentação**: http://localhost:3001 (Swagger UI)
-- **Endpoints**: http://localhost:3001/api/tasks
+- **API**: http://localhost:3000 (ou a porta configurada)
+- **Documentação**: http://localhost:3000 (Swagger UI)
 
 ## 🧪 Testes
 
@@ -70,15 +76,15 @@ npm run test:cov
 
 ```bash
 # Criar tarefa
-curl -X POST http://localhost:3001/api/tasks \
+curl -X POST http://localhost:3000/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title": "Estudar NestJS", "description": "Aprender sobre DTOs"}'
 
 # Listar tarefas
-curl http://localhost:3001/api/tasks
+curl http://localhost:3000/api/tasks
 
 # Marcar como concluída
-curl -X PATCH http://localhost:3001/api/tasks/1/done
+curl -X PATCH http://localhost:3000/api/tasks/1/done
 ```
 
 ## ⚠️ Observações
@@ -86,3 +92,4 @@ curl -X PATCH http://localhost:3001/api/tasks/1/done
 - Dados armazenados em memória (perdidos ao reiniciar)
 - Validação automática nos dados de entrada
 - Documentação interativa
+- Porta padrão: `3000` (configurável via variável de ambiente `PORT`)
