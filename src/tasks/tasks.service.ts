@@ -10,7 +10,7 @@ export class TasksService {
   private readonly tasks: Map<string, Task> = new Map<string, Task>();
 
   findAll(): Task[] {
-    return Array.from(this.tasks.values());
+    return Array.from(this.tasks.values()).reverse();
   }
 
   create(createTaskDto: CreateTaskDto): Task {
