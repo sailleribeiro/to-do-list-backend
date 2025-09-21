@@ -65,23 +65,4 @@ describe('TasksService', () => {
       service.markAsDone('550e8400-e29b-41d4-a716-446655440000'),
     ).toThrow(NotFoundException);
   });
-
-  it('should find task by id', () => {
-    const createTaskDto: CreateTaskDto = {
-      title: 'Test Task',
-    };
-
-    const task = service.create(createTaskDto);
-    const foundTask = service.findById(task.id);
-
-    expect(foundTask).toBeDefined();
-    expect(foundTask.id).toBe(task.id);
-    expect(foundTask.title).toBe('Test Task');
-  });
-
-  it('should throw NotFoundException when finding non-existent task', () => {
-    expect(() =>
-      service.findById('550e8400-e29b-41d4-a716-446655440000'),
-    ).toThrow(NotFoundException);
-  });
 });

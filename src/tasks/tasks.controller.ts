@@ -3,10 +3,12 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Body,
   ValidationPipe,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -21,8 +23,16 @@ export class TasksController {
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Return all tasks.' })
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'No tasks found.',
+  })
   findAll(): Task[] {
-    return this.tasksService.findAll();
+    const tasks = this.tasksService.findAll();
+    if (tasks.length === 0) {
+      throw new HttpException('No tasks found', HttpStatus.NO_CONTENT);
+    }
+    return tasks;
   }
 
   @Post()
@@ -58,8 +68,8 @@ export class TasksController {
     return this.tasksService.markAsDone(id);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get task by ID' })
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a task by ID' })
   @ApiParam({
     name: 'id',
     type: 'string',
@@ -67,9 +77,12 @@ export class TasksController {
     example: '550e8400-e29b-41d4-a716-446655440000',
     required: true,
   })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Return the task.' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'The task has been successfully deleted.',
+  })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
-  findById(@Param('id') id: string): Task {
-    return this.tasksService.findById(id);
+  delete(@Param('id') id: string): void {
+    this.tasksService.delete(id);
   }
 }

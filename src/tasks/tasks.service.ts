@@ -10,7 +10,7 @@ export class TasksService {
   private readonly tasks: Map<string, Task> = new Map<string, Task>();
 
   findAll(): Task[] {
-    return Array.from(this.tasks.values());
+    return Array.from(this.tasks.values()).reverse();
   }
 
   create(createTaskDto: CreateTaskDto): Task {
@@ -34,12 +34,11 @@ export class TasksService {
     return task;
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
-  findById(id: string): Task {
+  delete(id: string): void {
     const task = this.tasks.get(id);
     if (!task) {
       throw new NotFoundException('Task not found');
     }
-    return task;
+    this.tasks.delete(id);
   }
 }
