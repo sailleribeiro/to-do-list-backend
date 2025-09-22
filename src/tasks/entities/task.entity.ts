@@ -38,11 +38,20 @@ export class Task {
   })
   createdAt: Date;
 
+  @ApiProperty({
+    description: 'When the task was last updated',
+    example: '2024-01-01T10:00:00.000Z',
+    type: 'string',
+    format: 'date-time',
+  })
+  updatedAt: Date;
+
   constructor(id: string, title: string, description?: string) {
     this.id = id;
     this.title = title;
     this.description = description;
     this.done = false;
     this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 }
