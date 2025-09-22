@@ -20,8 +20,9 @@ export class Task {
     example: 'Implement authentication',
     required: false,
     maxLength: 500,
+    nullable: true,
   })
-  description?: string;
+  description: string | null;
 
   @ApiProperty({
     description: 'Whether the task is completed',
@@ -46,7 +47,7 @@ export class Task {
   })
   updatedAt: Date;
 
-  constructor(id: string, title: string, description?: string) {
+  constructor(id: string, title: string, description: string | null) {
     this.id = id;
     this.title = title;
     this.description = description;

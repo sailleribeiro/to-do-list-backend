@@ -22,7 +22,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx db/seed.ts"
+    "db:seed": "tsx db/seed.ts",
+    "db:push:docker": "docker-compose exec api npm run db:push",
+    "db:seed:docker": "docker-compose exec api npm run db:seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
