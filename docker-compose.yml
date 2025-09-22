@@ -4,10 +4,10 @@ services:
   api:
     build: .
     ports:
-      - "3001:3000"  # Porta externa 3001, interna 3000
+      - "${EXTERNAL_PORT:-3001}:${PORT:-3000}"  
     environment:
       - NODE_ENV=development
-      - PORT=3000
+      - PORT=${PORT:-3000}  
     volumes:
       - .:/app
       - /app/node_modules

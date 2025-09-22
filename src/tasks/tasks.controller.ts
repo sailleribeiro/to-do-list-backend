@@ -8,11 +8,11 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
-  HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { TaskIdDto } from './dto/task-id.dto';
 import { Task } from './entities/task.entity';
 
 @ApiTags('tasks')
@@ -22,17 +22,13 @@ export class TasksController {
 
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Return all tasks.' })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'No tasks found.',
+    status: HttpStatus.OK,
+    description: 'Return all tasks. Returns empty array if no tasks exist.',
+    type: [Task],
   })
   findAll(): Task[] {
-    const tasks = this.tasksService.findAll();
-    if (tasks.length === 0) {
-      throw new HttpException('No tasks found', HttpStatus.NO_CONTENT);
-    }
-    return tasks;
+    return this.tasksService.findAll();
   }
 
   @Post()
@@ -40,6 +36,7 @@ export class TasksController {
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'The task has been successfully created.',
+    type: Task,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
   create(@Body(new ValidationPipe()) createTaskDto: CreateTaskDto): Task {
@@ -58,14 +55,15 @@ export class TasksController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'The task has been marked as done.',
+    type: Task,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid task ID format.',
+    description: 'Invalid UUID format.',
   })
-  markAsDone(@Param('id') id: string): Task {
-    return this.tasksService.markAsDone(id);
+  markAsDone(@Param(new ValidationPipe()) params: TaskIdDto): Task {
+    return this.tasksService.markAsDone(params.id);
   }
 
   @Delete(':id')
@@ -78,11 +76,15 @@ export class TasksController {
     required: true,
   })
   @ApiResponse({
-    status: HttpStatus.OK,
+    status: HttpStatus.NO_CONTENT,
     description: 'The task has been successfully deleted.',
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Task not found.' })
-  delete(@Param('id') id: string): void {
-    this.tasksService.delete(id);
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid UUID format.',
+  })
+  delete(@Param(new ValidationPipe()) params: TaskIdDto): void {
+    this.tasksService.delete(params.id);
   }
 }

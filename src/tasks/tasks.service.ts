@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Task } from './entities/task.entity';
