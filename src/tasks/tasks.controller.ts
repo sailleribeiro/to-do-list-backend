@@ -8,6 +8,7 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
@@ -27,8 +28,8 @@ export class TasksController {
     description: 'Return all tasks. Returns empty array if no tasks exist.',
     type: [Task],
   })
-  findAll(): Task[] {
-    return this.tasksService.findAll();
+  async findAll(): Promise<Task[]> {
+    return await this.tasksService.findAll();
   }
 
   @Post()
@@ -39,8 +40,10 @@ export class TasksController {
     type: Task,
   })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Bad Request.' })
-  create(@Body(new ValidationPipe()) createTaskDto: CreateTaskDto): Task {
-    return this.tasksService.create(createTaskDto);
+  async create(
+    @Body(new ValidationPipe()) createTaskDto: CreateTaskDto,
+  ): Promise<Task> {
+    return await this.tasksService.create(createTaskDto);
   }
 
   @Patch(':id/done')
@@ -62,11 +65,14 @@ export class TasksController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid UUID format.',
   })
-  markAsDone(@Param(new ValidationPipe()) params: TaskIdDto): Task {
-    return this.tasksService.markAsDone(params.id);
+  async markAsDone(
+    @Param(new ValidationPipe()) params: TaskIdDto,
+  ): Promise<Task> {
+    return await this.tasksService.markAsDone(params.id);
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a task by ID' })
   @ApiParam({
     name: 'id',
@@ -84,7 +90,7 @@ export class TasksController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid UUID format.',
   })
-  delete(@Param(new ValidationPipe()) params: TaskIdDto): void {
-    this.tasksService.delete(params.id);
+  async delete(@Param(new ValidationPipe()) params: TaskIdDto): Promise<void> {
+    return await this.tasksService.delete(params.id);
   }
 }

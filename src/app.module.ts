@@ -3,9 +3,10 @@ import { APP_PIPE } from '@nestjs/core';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { AppController } from './app.controller';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [TasksModule],
+  imports: [DatabaseModule, TasksModule],
   controllers: [AppController],
   providers: [
     AppService,

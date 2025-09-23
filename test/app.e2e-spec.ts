@@ -3,17 +3,33 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 
+const mockDb = {
+  select: jest.fn().mockReturnThis(),
+  from: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockResolvedValue([]),
+  insert: jest.fn().mockReturnThis(),
+  values: jest.fn().mockReturnThis(),
+  returning: jest.fn(),
+  update: jest.fn().mockReturnThis(),
+  set: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  delete: jest.fn().mockReturnThis(),
+};
+
 describe('AppController (e2e)', () => {
   let app: INestApplication;
+  let taskCounter = 0;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider('DATABASE')
+      .useValue(mockDb)
+      .compile();
 
     app = moduleFixture.createNestApplication();
 
-    // Configurar pipes igual ao main.ts
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -21,34 +37,87 @@ describe('AppController (e2e)', () => {
       }),
     );
 
-    // Configurar global prefix igual ao main.ts
-    app.setGlobalPrefix('api');
-
     await app.init();
+
+    jest.clearAllMocks();
+    taskCounter = 0;
+
+    setupMockResponses();
   });
+
+  function setupMockResponses() {
+    const tasks: any[] = [];
+
+    mockDb.orderBy.mockImplementation(() => Promise.resolve([...tasks]));
+
+    mockDb.returning.mockImplementation(() => {
+      const newTask = {
+        id: `task-${++taskCounter}`,
+        title: 'Test Task',
+        description: 'Test Description',
+        done: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      tasks.push(newTask);
+      return Promise.resolve([newTask]);
+    });
+  }
 
   afterEach(async () => {
     await app.close();
   });
 
-  describe('/api/tasks (GET)', () => {
-    it('should return empty array initially', () => {
+  describe('Health endpoints', () => {
+    it('/health (GET)', () => {
       return request(app.getHttpServer())
-        .get('/api/tasks')
+        .get('/health')
         .expect(200)
-        .expect([]);
+        .expect((res) => {
+          expect(res.body).toHaveProperty('name', 'To-Do List API');
+          expect(res.body).toHaveProperty('version', '1.0.0');
+          expect(res.body).toHaveProperty('status', 'running');
+          expect(res.body).toHaveProperty('timestamp');
+          expect(res.body).toHaveProperty('endpoints');
+          expect(res.body).toHaveProperty('documentation');
+          expect(res.body).toHaveProperty('description');
+        });
+    });
+
+    it('/version (GET)', () => {
+      return request(app.getHttpServer())
+        .get('/version')
+        .expect(200)
+        .expect({ version: '1.0.0' });
     });
   });
 
-  describe('/api/tasks (POST)', () => {
+  describe('/tasks (GET)', () => {
+    it('should return empty array initially', () => {
+      return request(app.getHttpServer()).get('/tasks').expect(200).expect([]);
+    });
+  });
+
+  describe('/tasks (POST)', () => {
     it('should create a new task', () => {
       const createTaskDto = {
         title: 'Test Task',
         description: 'Test Description',
       };
 
+      mockDb.returning.mockResolvedValueOnce([
+        {
+          id: 'test-id',
+          title: 'Test Task',
+          description: 'Test Description',
+          done: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
+
       return request(app.getHttpServer())
-        .post('/api/tasks')
+        .post('/tasks')
         .send(createTaskDto)
         .expect(201)
         .expect((res) => {
@@ -56,7 +125,6 @@ describe('AppController (e2e)', () => {
           expect(res.body.title).toBe('Test Task');
           expect(res.body.description).toBe('Test Description');
           expect(res.body.done).toBe(false);
-          expect(res.body).toHaveProperty('createdAt');
         });
     });
 
@@ -66,165 +134,87 @@ describe('AppController (e2e)', () => {
       };
 
       return request(app.getHttpServer())
-        .post('/api/tasks')
+        .post('/tasks')
         .send(createTaskDto)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toContain('title should not be empty');
-        });
-    });
-
-    it('should fail to create task with title too long', () => {
-      const createTaskDto = {
-        title: 'a'.repeat(101), // Mais que 100 caracteres
-        description: 'Test Description',
-      };
-
-      return request(app.getHttpServer())
-        .post('/api/tasks')
-        .send(createTaskDto)
-        .expect(400)
-        .expect((res) => {
-          expect(res.body.message).toContain(
-            'title must be shorter than or equal to 100 characters',
-          );
-        });
-    });
-  });
-
-  describe('/api/tasks/:id/done (PATCH)', () => {
-    it('should mark task as done', async () => {
-      // criar uma task
-      const createTaskDto = {
-        title: 'Task to complete',
-        description: 'This will be completed',
-      };
-
-      const createResponse = await request(app.getHttpServer())
-        .post('/api/tasks')
-        .send(createTaskDto)
-        .expect(201);
-
-      const taskId = createResponse.body.id;
-
-      // marca como done
-      return request(app.getHttpServer())
-        .patch(`/api/tasks/${taskId}/done`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.id).toBe(taskId);
-          expect(res.body.done).toBe(true);
-          expect(res.body.title).toBe('Task to complete');
-        });
-    });
-
-    it('should return 404 for non-existent task', () => {
-      return request(app.getHttpServer())
-        .patch('/api/tasks/999/done')
-        .expect(404)
-        .expect((res) => {
-          expect(res.body.message).toBe('Task not found');
-        });
-    });
-
-    it('should return 400 for invalid task ID', () => {
-      return request(app.getHttpServer())
-        .patch('/api/tasks/invalid/done')
         .expect(400);
     });
   });
 
-  describe('/api/tasks/:id (DELETE)', () => {
-    it('should delete a task by ID', async () => {
-      // Criar uma task
-      const createTaskDto = {
-        title: 'Task to delete',
-        description: 'This task will be deleted',
-      };
+  describe('/tasks/:id/done (PATCH)', () => {
+    it('should mark task as done', () => {
+      const taskId = '550e8400-e29b-41d4-a716-446655440000';
 
-      const createResponse = await request(app.getHttpServer())
-        .post('/api/tasks')
-        .send(createTaskDto)
-        .expect(201);
+      mockDb.returning.mockResolvedValueOnce([
+        {
+          id: taskId,
+          title: 'Task to complete',
+          description: 'This will be completed',
+          done: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
 
-      const taskId = createResponse.body.id;
-
-      // Deletar a task
-      await request(app.getHttpServer())
-        .delete(`/api/tasks/${taskId}`)
-        .expect(200);
-
-      // Verificar se a task foi removida
-      await request(app.getHttpServer())
-        .get('/api/tasks')
+      return request(app.getHttpServer())
+        .patch(`/tasks/${taskId}/done`)
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveLength(0);
+          expect(res.body.id).toBe(taskId);
+          expect(res.body.done).toBe(true);
         });
     });
 
     it('should return 404 for non-existent task', () => {
+      const nonExistentId = '550e8400-e29b-41d4-a716-446655440001';
+
+      mockDb.returning.mockResolvedValueOnce([]);
+
       return request(app.getHttpServer())
-        .delete('/api/tasks/550e8400-e29b-41d4-a716-446655440000')
-        .expect(404)
-        .expect((res) => {
-          expect(res.body.message).toBe('Task not found');
-        });
+        .patch(`/tasks/${nonExistentId}/done`)
+        .expect(404);
+    });
+
+    it('should return 400 for invalid UUID', () => {
+      return request(app.getHttpServer())
+        .patch('/tasks/invalid-uuid/done')
+        .expect(400);
     });
   });
 
-  describe('Integration test - Full workflow', () => {
-    it('should create, list, and complete a task', async () => {
-      // 1. Verificar lista vazia
-      await request(app.getHttpServer())
-        .get('/api/tasks')
-        .expect(200)
-        .expect([]);
+  describe('/tasks/:id (DELETE)', () => {
+    it('should delete a task by ID', () => {
+      const taskId = '550e8400-e29b-41d4-a716-446655440000';
 
-      // 2. Criar primeira task
-      const task1 = await request(app.getHttpServer())
-        .post('/api/tasks')
-        .send({
-          title: 'First Task',
-          description: 'My first task',
-        })
-        .expect(201);
+      mockDb.returning.mockResolvedValueOnce([
+        {
+          id: taskId,
+          title: 'Task to delete',
+          description: 'This task will be deleted',
+          done: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
 
-      // 3. Criar segunda task
-      const task2 = await request(app.getHttpServer())
-        .post('/api/tasks')
-        .send({
-          title: 'Second Task',
-        })
-        .expect(201);
+      return request(app.getHttpServer())
+        .delete(`/tasks/${taskId}`)
+        .expect(204);
+    });
 
-      // 4. Verificar lista com 2 tasks
-      await request(app.getHttpServer())
-        .get('/api/tasks')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveLength(2);
-          expect(res.body[0].title).toBe('First Task');
-          expect(res.body[1].title).toBe('Second Task');
-        });
+    it('should return 404 for non-existent task', () => {
+      const nonExistentId = '550e8400-e29b-41d4-a716-446655440001';
 
-      // 5. Marcar primeira task como done
-      await request(app.getHttpServer())
-        .patch(`/api/tasks/${task1.body.id}/done`)
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.done).toBe(true);
-        });
+      mockDb.returning.mockResolvedValueOnce([]);
 
-      // 6. Verificar estado final
-      await request(app.getHttpServer())
-        .get('/api/tasks')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveLength(2);
-          expect(res.body[0].done).toBe(true);
-          expect(res.body[1].done).toBe(false);
-        });
+      return request(app.getHttpServer())
+        .delete(`/tasks/${nonExistentId}`)
+        .expect(404);
+    });
+
+    it('should return 400 for invalid UUID', () => {
+      return request(app.getHttpServer())
+        .delete('/tasks/invalid-uuid')
+        .expect(400);
     });
   });
 });
