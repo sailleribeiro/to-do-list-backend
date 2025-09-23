@@ -1,43 +1,55 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-
-import { Task } from './entities/task.entity';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { Task } from './entities/task.entity';
+import { tasks } from '../../db/schema/tasks';
+import type { db as DatabaseType } from '../../db/connection';
 
 @Injectable()
 export class TasksService {
-  private readonly tasks: Map<string, Task> = new Map<string, Task>();
+  constructor(@Inject('DATABASE') private readonly db: typeof DatabaseType) {}
 
-  findAll(): Task[] {
-    return Array.from(this.tasks.values()).reverse();
+  async findAll(): Promise<Task[]> {
+    return await this.db.select().from(tasks).orderBy(tasks.createdAt);
   }
 
-  create(createTaskDto: CreateTaskDto): Task {
-    const taskId = uuidv4();
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const [newTask] = await this.db
+      .insert(tasks)
+      .values({
+        title: createTaskDto.title,
+        description: createTaskDto.description,
+      })
+      .returning();
 
-    const task = new Task(
-      taskId,
-      createTaskDto.title,
-      createTaskDto.description,
-    );
-    this.tasks.set(task.id, task);
-    return task;
+    return newTask;
   }
 
-  markAsDone(id: string): Task {
-    const task = this.tasks.get(id);
-    if (!task) {
-      throw new NotFoundException('Task not found');
+  async markAsDone(id: string): Promise<Task> {
+    const [updatedTask] = await this.db
+      .update(tasks)
+      .set({
+        done: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, id))
+      .returning();
+
+    if (!updatedTask) {
+      throw new NotFoundException(`Task with ID "${id}" not found`);
     }
-    task.done = true;
-    return task;
+
+    return updatedTask;
   }
 
-  delete(id: string): void {
-    const task = this.tasks.get(id);
-    if (!task) {
-      throw new NotFoundException('Task not found');
+  async delete(id: string): Promise<void> {
+    const [deletedTask] = await this.db
+      .delete(tasks)
+      .where(eq(tasks.id, id))
+      .returning();
+
+    if (!deletedTask) {
+      throw new NotFoundException(`Task with ID "${id}" not found`);
     }
-    this.tasks.delete(id);
   }
 }
